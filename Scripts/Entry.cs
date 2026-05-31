@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using Godot.Bridge;
 using HarmonyLib;
@@ -6,7 +7,6 @@ using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Modding;
 using MegaCrit.Sts2.Core.Odds;
-using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Rooms;
 
 namespace MoreEvent.Scripts;
@@ -17,22 +17,30 @@ public class MoreEventConfig
     public double MonsterOdds { get; set; } = 0.0;
 }
 
-[HarmonyPatch(typeof(MapPointTypeCounts), MethodType.Constructor, [typeof(Rng)])]
+[HarmonyPatch]
 public static class Patch_MoreUnknownNodes
 {
-    static void Postfix(MapPointTypeCounts __instance)
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.Method(typeof(MapPointTypeCounts), "StandardRandomUnknownCount");
+    }
+
+    static void Postfix(ref int __result)
     {
         if (Entry.Config == null) return;
-        var tr = Traverse.Create(__instance);
-        int cur = tr.Property<int>("NumOfUnknowns").Value;
-        tr.Property<int>("NumOfUnknowns").Value = (int)(cur * Entry.Config.UnknownNodeMultiplier);
+        __result = (int)(__result * Entry.Config.UnknownNodeMultiplier);
     }
 }
 
-[HarmonyPatch(typeof(UnknownMapPointOdds), MethodType.Constructor, [typeof(Rng)])]
+[HarmonyPatch]
 public static class Patch_FavorEvents
 {
-    static void Postfix(UnknownMapPointOdds __instance)
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.Method(typeof(UnknownMapPointOdds), "Roll");
+    }
+
+    static void Prefix(UnknownMapPointOdds __instance)
     {
         if (Entry.Config == null) return;
         __instance.MonsterOdds = (float)Entry.Config.MonsterOdds;
@@ -58,7 +66,7 @@ public class Entry
         try
         {
             var dir = Path.GetDirectoryName(typeof(Entry).Assembly.Location);
-            var path = Path.Combine(dir!, "config.json");
+            var path = Path.Combine(dir!, "MoreEvent.cfg");
             if (File.Exists(path))
             {
                 var json = File.ReadAllText(path);

@@ -4,8 +4,8 @@
   "author": "BaxterL",
   "description": "增加地图上事件(?)节点的出现概率",
   "version": "0.1.0",
-  "min_game_version": "0.105.0",
-  "has_pck": true,
+  "min_game_version": "0.106.0",
+  "has_pck": false,
   "has_dll": true,
   "dependencies": [],
   "affects_gameplay": true
