@@ -55,6 +55,8 @@ public class Entry
     public static void Init()
     {
         LoadConfig();
+        SyncFromModConfig();
+        ModConfigBridge.DeferredRegister();
         var harmony = new Harmony("sts2.moreevent");
         harmony.PatchAll();
         ScriptManagerBridge.LookupScriptsInAssembly(typeof(Entry).Assembly);
@@ -81,5 +83,25 @@ public class Entry
         {
             Config = new MoreEventConfig();
         }
+    }
+
+    internal static void SyncFromModConfig()
+    {
+        if (!ModConfigBridge.IsAvailable) return;
+        Config ??= new MoreEventConfig();
+        Config.UnknownNodeMultiplier = ModConfigBridge.GetValue("unknownNodeMultiplier", (float)Config.UnknownNodeMultiplier);
+        Config.MonsterOdds = ModConfigBridge.GetValue("monsterOdds", (float)Config.MonsterOdds);
+    }
+
+    internal static void SetUnknownNodeMultiplier(object val)
+    {
+        if (Config != null)
+            Config.UnknownNodeMultiplier = Convert.ToSingle(val);
+    }
+
+    internal static void SetMonsterOdds(object val)
+    {
+        if (Config != null)
+            Config.MonsterOdds = Convert.ToSingle(val);
     }
 }
