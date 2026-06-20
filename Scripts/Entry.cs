@@ -6,6 +6,7 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Map;
 using MegaCrit.Sts2.Core.Modding;
+using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Odds;
 using MegaCrit.Sts2.Core.Rooms;
 
@@ -22,13 +23,14 @@ public static class Patch_MoreUnknownNodes
 {
     static MethodBase TargetMethod()
     {
-        return AccessTools.Method(typeof(MapPointTypeCounts), "StandardRandomUnknownCount");
+        return AccessTools.Constructor(typeof(MapPointTypeCounts), [typeof(Rng)]);
     }
 
-    static void Postfix(ref int __result)
+    static void Postfix(MapPointTypeCounts __instance)
     {
         if (Entry.Config == null) return;
-        __result = (int)(__result * Entry.Config.UnknownNodeMultiplier);
+        var f = AccessTools.Field(typeof(MapPointTypeCounts), "NumOfUnknowns");
+        f.SetValue(__instance, (int)((int)f.GetValue(__instance) * Entry.Config.UnknownNodeMultiplier));
     }
 }
 
