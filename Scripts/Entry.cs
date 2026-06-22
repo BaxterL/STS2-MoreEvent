@@ -23,14 +23,13 @@ public static class Patch_MoreUnknownNodes
 {
     static MethodBase TargetMethod()
     {
-        return AccessTools.Constructor(typeof(MapPointTypeCounts), [typeof(Rng)]);
+        return AccessTools.Method(typeof(MapPointTypeCounts), nameof(MapPointTypeCounts.StandardRandomUnknownCount), [typeof(Rng)]);
     }
 
-    static void Postfix(MapPointTypeCounts __instance)
+    static void Postfix(ref int __result)
     {
         if (Entry.Config == null) return;
-        var f = AccessTools.Field(typeof(MapPointTypeCounts), "NumOfUnknowns");
-        f.SetValue(__instance, (int)((int)f.GetValue(__instance) * Entry.Config.UnknownNodeMultiplier));
+        __result = (int)(__result * Entry.Config.UnknownNodeMultiplier);
     }
 }
 
